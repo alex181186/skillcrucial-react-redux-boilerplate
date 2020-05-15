@@ -1,6 +1,7 @@
 /* eslint-disable import/no-duplicates */
 import express from 'express'
 import path from 'path'
+import axios from 'axios'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 import sockjs from 'sockjs'
@@ -20,6 +21,37 @@ server.use(bodyParser.urlencoded({ limit: '50mb', extended: true, parameterLimit
 server.use(bodyParser.json({ limit: '50mb', extended: true }))
 
 server.use(cookieParser())
+
+/*
+server.use('/api/', (req, res,) => {
+  res.set('x-skillcrucial-user', 'b1fccc74-1b3b-4035-9644-2494f4f742b7')
+  res.set('Access-Control-Expose-Headers', 'X-SKILLCRUCIAL-USER')
+})
+*/
+
+function setHeader (req, res, next) {
+  res.set('x-skillcrucial-user', 'b1fccc74-1b3b-4035-9644-2494f4f742b7')
+  res.set('Access-Control-Expose-Headers', 'X-SKILLCRUCIAL-USER')
+  next()
+}
+
+
+server.get('/api/v1/users', setHeader, async (req, res) => {
+  const { data: users } = await axios('https://jsonplaceholder.typicode.com/users')
+  // console.log(users)
+  res.json(users)
+})
+
+server.get('/api/v1/users/:name', (req, res) => {
+  const { name } = req.params
+  res.json({ name })
+})
+
+server.get('/api/v1/users/take/:number', async (req, res) => {
+  const { number } = req.params
+  const { data: users } = await axios('https://jsonplaceholder.typicode.com/users')
+  res.json(users.slice(0, +number))
+})
 
 server.use('/api/', (req, res) => {
   res.status(404)
