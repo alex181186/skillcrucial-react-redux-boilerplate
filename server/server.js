@@ -7,7 +7,11 @@ import bodyParser from 'body-parser'
 import sockjs from 'sockjs'
 
 import cookieParser from 'cookie-parser'
+// import { readFile, writeFile, unlink } from 'fs'
+const { readFile, writeFile, unlink } = require('fs').promises
 import Html from '../client/html'
+
+// import { getDisplayName } from 'next/dist/next-server/lib/utils'
 
 let connections = []
 
@@ -22,22 +26,41 @@ server.use(bodyParser.json({ limit: '50mb', extended: true }))
 
 server.use(cookieParser())
 
+const saveFile = async (users, nameJson) => {
+  return writeFile(`${__dirname}/${nameJson}`, JSON.stringify(users), { encoding: 'utf8' })
+}
+
+const getJson = async (nameJson) => {
+  return readFile(`${__dirname}/${nameJson}`, { encoding: 'utf8' })
+    .then((text) => {
+      return JSON.parse(text)
+    })
+    .catch(async () => {
+      const { data: users } = await axios('https://jsonplaceholder.typicode.com/users')
+      await saveFile(users, nameJson)
+      return users
+    })
+}
+
 /*
-server.use('/api/', (req, res,) => {
-  res.set('x-skillcrucial-user', 'b1fccc74-1b3b-4035-9644-2494f4f742b7')
-  res.set('Access-Control-Expose-Headers', 'X-SKILLCRUCIAL-USER')
-})
+const checkJson = async (nameJson) => {
+  await stat(`${nameJson}`)
+    .then(() => true)
+      .catch( err => {
+        console.log(err)
+        return false
+      })
+}
 */
 
-function setHeader (req, res, next) {
+function setHeader(req, res, next) {
   res.set('x-skillcrucial-user', 'b1fccc74-1b3b-4035-9644-2494f4f742b7')
   res.set('Access-Control-Expose-Headers', 'X-SKILLCRUCIAL-USER')
   next()
 }
 
-
 server.get('/api/v1/users', setHeader, async (req, res) => {
-  const { data: users } = await axios('https://jsonplaceholder.typicode.com/users')
+  const users = await getJson('users.json')
   // console.log(users)
   res.json(users)
 })
@@ -61,7 +84,7 @@ server.use('/api/', (req, res) => {
 const echo = sockjs.createServer()
 echo.on('connection', (conn) => {
   connections.push(conn)
-  conn.on('data', async () => {})
+  conn.on('data', async () => { })
 
   conn.on('close', () => {
     connections = connections.filter((c) => c.readyState !== 3)
