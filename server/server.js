@@ -26,8 +26,14 @@ server.use(bodyParser.json({ limit: '50mb', extended: true }))
 
 server.use(cookieParser())
 
+const JSONFile = 'users.json'
+
 const saveFile = async (users, nameJson) => {
   return writeFile(`${__dirname}/${nameJson}`, JSON.stringify(users), { encoding: 'utf8' })
+}
+
+const deleteFile = async (nameJson) => {
+  return unlink(`${__dirname}/${nameJson}`)
 }
 
 const getJson = async (nameJson) => {
@@ -60,11 +66,60 @@ function setHeader(req, res, next) {
 }
 
 server.get('/api/v1/users', setHeader, async (req, res) => {
-  const users = await getJson('users.json')
+  const users = await getJson(JSONFile)
   // console.log(users)
   res.json(users)
 })
 
+
+
+server.post('/api/v1/users', setHeader, async (req, res) => {
+  const users = await getJson(JSONFile)
+  const user = req.body
+  user.id = users.length + 1
+  const usersNew = [...users, user]
+  saveFile(usersNew, JSONFile)
+  res.json({ 'status': 'success', 'id': user.id })
+})
+
+server.patch('/api/v1/users/:userId', setHeader, async (req, res) => {
+  const users = await getJson(JSONFile)
+  const queryUser = req.query
+  const { userId } = req.params
+  users.forEach(user => {
+    if (user.id === +userId) {
+      for (let key in queryUser) {
+        user[key] = queryUser[key]
+      }
+    }
+    return user
+  })
+  saveFile(users, JSONFile)
+  res.json({ 'status': 'success', 'id': userId })
+})
+
+server.delete('/api/v1/users/:userId', setHeader, async (req, res) => {
+  const users = await getJson(JSONFile)
+  const { userId } = req.params
+  const deleteId = users.findIndex((user) => {
+    return userId === user.id
+  })
+  users.splice(deleteId, 1)
+  saveFile(users, JSONFile)
+  res.json({ 'status': 'success', 'id': deleteId })
+})
+
+server.delete('/api/v1/users/', setHeader, async (req, res) => {
+  try {
+    const users = await deleteFile(JSONFile)
+  } catch (err) {
+    res.json({ 'status': 'File already deleted'})
+  }
+  res.json({ 'status': 'ok'})
+})
+
+
+/*
 server.get('/api/v1/users/:name', (req, res) => {
   const { name } = req.params
   res.json({ name })
@@ -75,6 +130,7 @@ server.get('/api/v1/users/take/:number', async (req, res) => {
   const { data: users } = await axios('https://jsonplaceholder.typicode.com/users')
   res.json(users.slice(0, +number))
 })
+*/
 
 server.use('/api/', (req, res) => {
   res.status(404)
