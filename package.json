@@ -159,7 +159,7 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "*.hot-update.json"
+      "users.json"
     ]
   },
   "husky": {
