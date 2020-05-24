@@ -5,12 +5,11 @@ import axios from 'axios'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 import sockjs from 'sockjs'
-
 import cookieParser from 'cookie-parser'
 // import { readFile, writeFile, unlink } from 'fs'
-const { readFile, writeFile, unlink } = require('fs').promises
 import Html from '../client/html'
 
+const { readFile, writeFile, unlink } = require('fs').promises
 // import { getDisplayName } from 'next/dist/next-server/lib/utils'
 
 let connections = []
@@ -71,8 +70,6 @@ server.get('/api/v1/users', setHeader, async (req, res) => {
   res.json(users)
 })
 
-
-
 server.post('/api/v1/users', setHeader, async (req, res) => {
   const users = await getJson(JSONFile)
   const user = req.body
@@ -88,9 +85,8 @@ server.patch('/api/v1/users/:userId', setHeader, async (req, res) => {
   const { userId } = req.params
   users.forEach(user => {
     if (user.id === +userId) {
-      for (let key in queryUser) {
-        user[key] = queryUser[key]
-      }
+      const userNew = { ...user, ...queryUser }
+      return userNew
     }
     return user
   })
@@ -111,11 +107,11 @@ server.delete('/api/v1/users/:userId', setHeader, async (req, res) => {
 
 server.delete('/api/v1/users/', setHeader, async (req, res) => {
   try {
-    const users = await deleteFile(JSONFile)
+    await deleteFile(JSONFile)
   } catch (err) {
-    res.json({ 'status': 'File already deleted'})
+    res.json({ 'status': 'File already deleted' })
   }
-  res.json({ 'status': 'ok'})
+  res.json({ 'status': 'ok' })
 })
 
 
