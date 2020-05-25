@@ -76,14 +76,14 @@ server.post('/api/v1/users', setHeader, async (req, res) => {
   user.id = users.length + 1
   const usersNew = [...users, user]
   saveFile(usersNew, JSONFile)
-  res.json({ 'status': 'success', 'id': user.id })
+  res.json({ status: 'success', id: user.id })
 })
 
 server.patch('/api/v1/users/:userId', setHeader, async (req, res) => {
   const users = await getJson(JSONFile)
   const queryUser = req.query
   const { userId } = req.params
-  users.forEach(user => {
+  users.forEach((user) => {
     if (user.id === +userId) {
       const userNew = { ...user, ...queryUser }
       return userNew
@@ -91,29 +91,28 @@ server.patch('/api/v1/users/:userId', setHeader, async (req, res) => {
     return user
   })
   saveFile(users, JSONFile)
-  res.json({ 'status': 'success', 'id': userId })
+  res.json({ status: 'success', id: userId })
 })
 
 server.delete('/api/v1/users/:userId', setHeader, async (req, res) => {
   const users = await getJson(JSONFile)
   const { userId } = req.params
   const deleteId = users.findIndex((user) => {
-    return userId === user.id
+    return +userId === user.id
   })
   users.splice(deleteId, 1)
   saveFile(users, JSONFile)
-  res.json({ 'status': 'success', 'id': deleteId })
+  res.json({ status: 'success', id: userId })
 })
 
 server.delete('/api/v1/users/', setHeader, async (req, res) => {
   try {
     await deleteFile(JSONFile)
   } catch (err) {
-    res.json({ 'status': 'File already deleted' })
+    res.json({ status: 'File already deleted' })
   }
-  res.json({ 'status': 'ok' })
+  res.json({ status: 'ok' })
 })
-
 
 /*
 server.get('/api/v1/users/:name', (req, res) => {
@@ -136,8 +135,7 @@ server.use('/api/', (req, res) => {
 const echo = sockjs.createServer()
 echo.on('connection', (conn) => {
   connections.push(conn)
-  conn.on('data', async () => { })
-
+  conn.on('data', async () => {})
   conn.on('close', () => {
     connections = connections.filter((c) => c.readyState !== 3)
   })
