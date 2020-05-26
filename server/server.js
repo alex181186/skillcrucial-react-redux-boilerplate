@@ -82,14 +82,12 @@ server.post('/api/v1/users', setHeader, async (req, res) => {
 
 server.patch('/api/v1/users/:userId', setHeader, async (req, res) => {
   const users = await getJson(JSONFile)
-  const queryUser = req.query
+  const queryUser = req.body
   const { userId } = req.params
-  users.forEach((user) => {
+  users.forEach((user, i) => {
     if (user.id === +userId) {
-      const userNew = { ...user, ...queryUser }
-      return userNew
+      users[i] = { ...queryUser, ...user }
     }
-    return user
   })
   saveFile(users, JSONFile)
   res.json({ status: 'success', id: userId })
