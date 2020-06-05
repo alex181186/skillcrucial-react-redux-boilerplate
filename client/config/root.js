@@ -8,7 +8,7 @@ import { bindActionCreators } from 'redux'
 
 import store, { history } from '../redux'
 
-import Home from '../components/home'
+import Home from '../components/home_w3'
 import DummyView from '../components/dummy-view'
 import NotFound from '../components/404'
 
@@ -82,9 +82,7 @@ export default (props) => {
       <ConnectedRouter history={history} location={props.location} context={props.context}>
         <StartupConnected>
           <Switch>
-            <Route exact path="/" component={() => <DummyView />} />
-            <Route exact path="/planets/:planetId" component={() => <DummyView />} />
-            <Route exact path="/dashboard" component={() => <Home />} />
+            <Route exact path="/*" component={() => <Home />} />
             <PrivateRouteConnected exact path="/hidden-route" component={() => <DummyView />} />
             <Route component={() => <NotFound />} />
           </Switch>
