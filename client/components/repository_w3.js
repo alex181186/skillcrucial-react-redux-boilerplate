@@ -1,24 +1,31 @@
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import Axios from 'axios'
+import { Link } from 'react-router-dom'
+import axios from 'axios'
 import Header from './header_w3'
 // import Head from './head'
 
-const DashboardProfile = () => {
-  const { userName } = useParams()
-  const [user, setUser] = useState({ userName })
+const DashboardProfile = (props) => {
+  const { userName } = props
+  const [repositoryList, setRepositoryList] = useState([])
   useEffect(() => {
-    Axios.get(`/users/${user}/repos`).then((it) => {
-      setUser(it.data)
+    axios.get(`https://api.github.com/users/${userName}/repos`).then((it) => {
+      setRepositoryList(it.data.map((repo) => repo.name))
     })
     return () => {}
-  }, [user])
-
+  }, [userName])
   return (
     <div>
-      <div id="title">Main</div>
       <Header />
-      <div id="username">{user}</div>
+      <div>
+        {repositoryList.map((repoName) => {
+          const linkRepo = `${userName}/${repoName}`
+          return (
+            <div>
+              <Link to={linkRepo}>{repoName}</Link>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
